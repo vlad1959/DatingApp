@@ -40,6 +40,7 @@ namespace DatingApp.API
                    opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                });
             services.AddCors(); //alows this api to be called accross domains
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings")); // this will craete instance of CloudinarySettings class defined in helpers folder and fill it with parameters from appsettings.json
             services.AddAutoMapper(); //added this one with nuget
             services.AddTransient<Seed>();
             services.AddScoped<IAuthRepository, AuthRepository>();

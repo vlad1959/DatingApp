@@ -13,6 +13,8 @@ import { AuthService } from 'src/app/_servicies/auth.service';
 })
 export class MemberEditComponent implements OnInit {
   user: User;
+  photoUrl: string;
+
   @ViewChild('EditForm') editForm: NgForm;
   // listening to window unload event to prevent closing window with unsaved changes
   @HostListener('window:beforeunload', ['$event'])
@@ -31,6 +33,7 @@ export class MemberEditComponent implements OnInit {
         this.user = data.user;
       }
     );
+    this.authService.currentPhotoUrl.subscribe(photoUrl => this.photoUrl = photoUrl); // get user's photo from subject observable
   }
   updateUser() {
     this.userService.updateUser(this.authService.decodedToken.nameid, this.user).subscribe(
@@ -40,5 +43,9 @@ export class MemberEditComponent implements OnInit {
       }, error => {
       this.alertify.error(error);
     });
+  }
+
+  updateMainPhoto(photoUrl) {
+    this.user.photoUrl = photoUrl;
   }
 }
