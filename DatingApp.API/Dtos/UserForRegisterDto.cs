@@ -19,13 +19,13 @@ namespace DatingApp.API.Dtos
         public string City { get; set; }
         [Required]
         public string Country { get; set; }
-        public DateTime Created { get; set; }
+        public DateTime CreatedMyProperty { get; set; }
         public DateTime LastActive { get; set; }
 
         public UserForRegisterDto()
         {
             LastActive = DateTime.Now;
-            Created = DateTime.Now;
+            CreatedMyProperty = DateTime.Now;
         }
     }
 }

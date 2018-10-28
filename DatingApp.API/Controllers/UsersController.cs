@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Dtos;
+using DatingApp.API.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace DatingApp.API.Controllers
 {
     // url: http://localhost:5000/api/users
     //only authorized user can get access
+    [ServiceFilter(typeof(LogUserActivity))] //this will use this class to update activity date whenever any method is called fom this controller
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]

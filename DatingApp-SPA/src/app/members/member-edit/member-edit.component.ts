@@ -34,6 +34,7 @@ export class MemberEditComponent implements OnInit {
       }
     );
     this.authService.currentPhotoUrl.subscribe(photoUrl => this.photoUrl = photoUrl); // get user's photo from subject observable
+    console.log(this.user);
   }
   updateUser() {
     this.userService.updateUser(this.authService.decodedToken.nameid, this.user).subscribe(

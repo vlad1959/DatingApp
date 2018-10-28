@@ -30,7 +30,7 @@ import { NgxGalleryModule } from 'ngx-gallery';
 import { MemberEditResolver } from './_resolvers/member-edit.reslover';
 import { PreventUnsavedChanges } from './_guards/prevent-unsaved-changes.guard';
 import { FileUploadModule } from 'ng2-file-upload';
-
+import { TimeAgoPipe} from 'time-ago-pipe';
 
 
 // using angular2-jwt to attach JWT token with each HttpClient request
@@ -52,7 +52,8 @@ export function tokenGetter() {
       MemberCardComponent,
       MemberDetailComponent,
       MemberEditComponent,
-      PhotoEditorComponent
+      PhotoEditorComponent,
+      TimeAgoPipe
    ],
    imports: [
       BrowserModule,
