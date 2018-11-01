@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { BsDropdownModule, TabsModule, BsDatepickerModule } from 'ngx-bootstrap';
+import { BsDropdownModule, TabsModule, BsDatepickerModule, PaginationModule,  ButtonsModule} from 'ngx-bootstrap';
 
 import { RouterModule } from '@angular/router';
 import { JwtModule } from '@auth0/angular-jwt';
@@ -64,6 +64,8 @@ export function tokenGetter() {
       FileUploadModule,
       BsDropdownModule.forRoot(), // ngx-bootstrap
       BsDatepickerModule.forRoot(), // ngx-bootstrap
+      PaginationModule.forRoot(), // ngx-bootstrap
+      ButtonsModule.forRoot(), // ngx-bootstrap
       TabsModule.forRoot(),
       RouterModule.forRoot(appRoutes),
       JwtModule.forRoot({

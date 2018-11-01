@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../_models/user';
+import { PaginatedResult } from '../_models/pagination';
+import { map } from 'rxjs/operators';
 
 
 // token is sent with JWT angualr2 interceptor defined in app.module.ts
@@ -20,9 +22,37 @@ const httpOptions = {
 export class UserService {
   baseUrl = environment.apiUrl;
 constructor(private http: HttpClient) { }
-  getUsers(): Observable<User[]> {
+
+  getUsers(page?, itemsPerPage?, userParams?): Observable<PaginatedResult<User[]>> {
     // return this.http.get<User[]>(this.baseUrl + 'users', httpOptions);
-    return this.http.get<User[]>(this.baseUrl + 'users');
+    const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<User[]>();
+    let params = new HttpParams(); // query string parameters
+
+    if (page != null && itemsPerPage != null) {
+
+      params = params.append('pageNumber', page);
+      params = params.append('pageSize', itemsPerPage);
+    }
+
+    if (userParams != null) {
+      // those will be sent to api as query string
+      params = params.append('minAge', userParams.minAge);
+      params = params.append('maxAge', userParams.maxAge);
+      params = params.append('gender', userParams.gender);
+      params = params.append('orderBy', userParams.orderBy);
+    }
+    // by default observable of body is returned, need the whole resposne in this case to get the HTTP headers
+    // and users from response body 
+    return this.http.get<User[]>(this.baseUrl + 'users', {observe: 'response', params})
+    .pipe(
+      map(response => {
+        paginatedResult.result = response.body;
+        if (response.headers.get('Pagination') != null) {
+          paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
+        }
+        return paginatedResult;
+      })
+    );
   }
 
   getUser(id): Observable<User> {

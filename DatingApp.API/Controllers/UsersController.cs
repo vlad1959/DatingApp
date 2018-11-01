@@ -28,10 +28,29 @@ namespace DatingApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
+        //userParams is data sent by the angular with the query string
+        //Note: the client may not send anything, but page size and items per page will 
+        //still be deafulted and returned back to the client
+        //example of the call: http://localhost:5000/api/users?pageNumber=1&pageSize=10
+        public async Task<IActionResult> GetUsers([FromQuery]UserParams userParams)
         {
-            var users = await _repo.GetUsers();
+            //currently logged in user - from the token
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userFromRepo = await _repo.GetUser(currentUserId);
+            userParams.UserId = currentUserId;
+            //if gender wasn't passed, then take gender from the repo object and set it to the opposite sex
+            if (string.IsNullOrEmpty(userParams.Gender))
+            {
+                userParams.Gender = (userFromRepo.Gender == "male" ? "female" : "male");
+            }
+
+            //users is PagedList<User>, which conatin the users based on page number and size
+            var users = await _repo.GetUsers(userParams); //PagedList users
             var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
+            //add pagination header to response using REsponse extension method
+           
+
+            Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
             return Ok(usersToReturn);
         }
         [HttpGet("{id}", Name="GetUser")]
