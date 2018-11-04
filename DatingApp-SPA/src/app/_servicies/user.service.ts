@@ -23,7 +23,7 @@ export class UserService {
   baseUrl = environment.apiUrl;
 constructor(private http: HttpClient) { }
 
-  getUsers(page?, itemsPerPage?, userParams?): Observable<PaginatedResult<User[]>> {
+  getUsers(page?, itemsPerPage?, userParams?, likesParam?): Observable<PaginatedResult<User[]>> {
     // return this.http.get<User[]>(this.baseUrl + 'users', httpOptions);
     const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<User[]>();
     let params = new HttpParams(); // query string parameters
@@ -41,6 +41,14 @@ constructor(private http: HttpClient) { }
       params = params.append('gender', userParams.gender);
       params = params.append('orderBy', userParams.orderBy);
     }
+
+    if (likesParam === 'Likers') {
+      params = params.append('likers', 'true');
+    }
+    if (likesParam === 'Likees') {
+      params = params.append('likees', 'true');
+    }
+
     // by default observable of body is returned, need the whole resposne in this case to get the HTTP headers
     // and users from response body 
     return this.http.get<User[]>(this.baseUrl + 'users', {observe: 'response', params})
@@ -71,5 +79,9 @@ constructor(private http: HttpClient) { }
 
   deletePhoto(userId: number, photoId: number) {
     return this.http.delete(this.baseUrl + 'users/' + userId + '/photos/' + photoId);
+  }
+
+  sendLike(id: number, recipientId: number) {
+    return this.http.post(this.baseUrl + 'users/' + id + '/like/' + recipientId, {}); // body is empty
   }
 }

@@ -43,6 +43,19 @@ namespace DatingApp.API.Data
 
             users = users.Where(u => u.Gender == userParams.Gender);
 
+            if (userParams.Likers)
+            {
+                //userParams.Liker is boolean
+                var userLikers = await GetUserLikes(userParams.UserId, userParams.Likers);
+                users = users.Where(u => userLikers.Contains(u.Id));
+            }
+
+            if (userParams.Likees)
+            {
+                var userLikees = await GetUserLikes(userParams.UserId, userParams.Likers);
+                users = users.Where(u => userLikees.Contains(u.Id));
+            }
+
             //if userparams are not default, thatmeans we have to filter by age
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
@@ -66,6 +79,27 @@ namespace DatingApp.API.Data
             return await PagedList<User>.CreateAsync(users, userParams.PageNumber, userParams.PageSize);
         }
 
+        //return array of ids that represnt users that either liked
+        //by this user or like this user
+        private async Task<IEnumerable<int>> GetUserLikes(int id, bool likers)
+        {
+            //if likers = true, return user ids that like currently logged in user
+            var user = await _context.Users
+                .Include(x => x.Likers)
+                .Include(x => x.Likees)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            //return users that like currently logged in user
+            if (likers) 
+            {
+                return user.Likers.Where(u => u.LikeeId == id).Select(i => i.LikerId);
+            }    
+            else
+            {
+                return user.Likees.Where(u => u.LikerId == id).Select(i => i.LikeeId);
+            }
+        }
+
         public async Task<bool> SaveAll()
         {
             return await _context.SaveChangesAsync() > 0; //return true if more than 0 changes were saved
@@ -82,6 +116,13 @@ namespace DatingApp.API.Data
             return await _context.Photos.Where(u => u.UserId == userId)
                  .FirstOrDefaultAsync(p => p.IsMain);
             
+        }
+
+        //this method will simply verify if user already liked another user to throw error in controller
+        public async Task<Like> GetLike(int userId, int recipientId)
+        {
+            return await _context.Likes.FirstOrDefaultAsync(u =>
+             u.LikerId == userId && u.LikeeId == recipientId);
         }
     }
 }
