@@ -124,5 +124,59 @@ namespace DatingApp.API.Data
             return await _context.Likes.FirstOrDefaultAsync(u =>
              u.LikerId == userId && u.LikeeId == recipientId);
         }
+
+        public async Task<Message> GetMessage(int id) 
+        {
+            return await _context.Messages.FirstOrDefaultAsync(m => m.id == id);
+        }
+
+        public async Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams)
+        {
+
+           //note User objects Sender and REcipient are needed to eventually get PhotoUrl and knowsAS to sent bacl to angular 
+           var messages = _context.Messages
+               .Include(u => u.Sender).ThenInclude(p => p.Photos)
+               .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+               .AsQueryable(); //note AsQuerable is used here because it is needed in PagedList.CreateAsync method
+
+            switch (messageParams.MessageContainer)
+            {
+                case "Inbox": //messages sent to UserId
+                  messages = messages.Where(u => u.RecipientId == messageParams.UserId  
+                    && u.RecepientDeleted == false);
+                  break;
+                case "Outbox":
+                  messages = messages.Where(u => u.SenderId == messageParams.UserId 
+                    && u.SenderDeleted == false);
+                  break;
+                default:
+                  messages = messages.Where(u => u.RecipientId == messageParams.UserId 
+                    && u.IsRead == false && u.RecepientDeleted == false);
+                  break;
+
+            }
+            
+            messages = messages.OrderByDescending(m=>m.MessageSent);
+
+            //PagedList is a list of message with pagination information 
+            return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+        }
+
+        //note that method does not retirn PagedLit of messages, but rather IEnumerable
+        public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
+        {
+            //note: AsQuerable is not used here because messages is just a List, NOT PagedList
+            //get conversation between 2 users
+            var messages = await _context.Messages
+               .Include(u => u.Sender).ThenInclude(p => p.Photos)
+               .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+               .Where(m => m.RecipientId == userId && m.RecepientDeleted == false 
+                 && m.SenderId == recipientId ||
+                 m.RecipientId == recipientId && m.SenderId == userId 
+                 && m.SenderDeleted == false)
+               .OrderByDescending(m => m.MessageSent)
+               .ToListAsync();
+            return messages;   
+        }
     }
 }
